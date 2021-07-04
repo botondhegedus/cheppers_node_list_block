@@ -1,0 +1,6 @@
+dependencies:
+  enforced:
+    module:
+      - cheppers_node_list_block
+  module:
+    - cheppers_node_list_block

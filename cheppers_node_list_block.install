@@ -1,0 +1,18 @@
+<?php
+
+/**
+ * @file
+ * Installation functions for Cheppers Node List Block module.
+ */
+
+use Drupal\user\RoleInterface;
+
+/**
+ * Implements hook_install().
+ */
+function cheppers_node_list_block_install() {
+  user_role_change_permissions(RoleInterface::AUTHENTICATED_ID, array(
+    'view cheppers node list block' => TRUE,
+    'set number of nodes listed in block' => TRUE,
+  ));
+}

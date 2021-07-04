@@ -1,0 +1,117 @@
+<?php
+
+/**
+ * @file
+ * Provides Cheppers Node List Block functionality.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_help().
+ */
+function cheppers_node_list_block_help($route_name) {
+  switch ($route_name) {
+    case 'help.page.cheppers_node_list_block':
+      return t('
+        <h2>Creates a block plugin that lists the title of the 10 most recent node content by default.</h2>
+      ');
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function hook_module_uninstall(){
+  // Remove all user set data.
+  \Drupal::service('user.data')->delete('cheppers_node_list_block');
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Add the Cheppers Node List Block form to an individual user's account page
+ * to set number of nodes to list in the block.
+ *
+ * @see \Drupal\user\ProfileForm::form()
+ */
+function cheppers_node_list_block_form_user_form_alter(&$form, FormStateInterface $form_state) {
+  // Get current user object.
+  $user = \Drupal::currentUser();
+  // Get current user roles.
+  $user_roles = $user->getRoles();
+
+  // Check if user is authenticated, not administrator and
+  // has relevant permission.
+  if (!$user->isAnonymous() && !in_array("administrator", $user_roles) &&
+$user->hasPermission('set number of nodes listed in block')) {
+    // Get block configuration value.
+    $default_value = get_block_config_value();
+    // Get account holder user object.
+    $account = $form_state->getFormObject()->getEntity();
+
+    // Get block value set by user.
+    if ($account->id()) {
+      $account_data = \Drupal::service('user.data')->get(
+        'cheppers_node_list_block',
+        $account->id(),
+        'node_number'
+      );
+    }
+
+    // Set form value based on user setting, if available.
+    $node_number = (isset($account_data) && $account_data !== FALSE) ? $account_data : $default_value;
+
+    $form['node_number'] = [
+      '#type' => 'number',
+      '#title' => t('Number of nodes to list'),
+      '#default_value' => (int) $node_number,
+      '#min' => 0,
+      '#max' => 100,
+      '#description' => t("Set number of nodes to list in Cheppers Node List Block."),
+    ];
+
+    // Add custom submit.
+    $form['actions']['submit']['#submit'][] = 'cheppers_node_list_block_user_profile_form_submit';
+  }
+}
+
+/**
+ * Submit callback for the user profile form to save the contact page setting.
+ */
+function cheppers_node_list_block_user_profile_form_submit($form, FormStateInterface $form_state) {
+  // Get account holder user object.
+  $account = $form_state->getFormObject()->getEntity();
+
+  // Set submitted value to account.
+  if ($account->id() && $form_state->hasValue('node_number')) {
+    \Drupal::service('user.data')->set(
+      'cheppers_node_list_block',
+      $account->id(),
+      'node_number',
+      (int) $form_state->getValue('node_number')
+    );
+  }
+}
+
+/**
+ * Retrieve block admin value.
+ *
+ * @return string
+ */
+function get_block_config_value() {
+  // Get default value.
+  $default_config = \Drupal::config('cheppers_node_list_block.settings');
+  $default_value = $default_config->get('node_list.item_number');
+  // Get block instance.
+  $block = \Drupal\block\Entity\Block::load('cheppersnodelistblock');
+
+  if ($block) {
+    // Get node number set in admin.
+    $settings = $block->get('settings');
+    $user_value = $settings['node_number'];
+  }
+
+  // Return value based on user setting, if available.
+  return (isset($user_value) && $user_value !== NULL ) ? $user_value : $default_value;
+}

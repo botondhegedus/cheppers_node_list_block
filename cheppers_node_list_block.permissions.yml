@@ -1,0 +1,4 @@
+view cheppers node list block:
+  title: 'View Cheppers Node List Block'
+set number of nodes listed in block:
+  title: 'Set number of nodes listed in block'

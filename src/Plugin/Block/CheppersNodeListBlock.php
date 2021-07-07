@@ -4,6 +4,9 @@ namespace Drupal\cheppers_node_list_block\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\user\UserData as UserDataStorage;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
@@ -17,7 +20,50 @@ use Drupal\Core\Url;
  *   admin_label = @Translation("Cheppers Node List Block")
  * )
  */
-class CheppersNodeListBlock extends BlockBase {
+class CheppersNodeListBlock extends BlockBase implements ContainerFactoryPluginInterface {
+
+  /**
+   * The current user.
+   *
+   * @var \Drupal\Core\Session\AccountInterface
+   */
+  protected $currentUser;
+
+  /**
+   * @var \Drupal\user\UserData
+   */
+  protected $userData;
+
+  /**
+   * Builds a user data entity destination.
+   *
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin_id for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param \Drupal\user\UserData $user_data
+   *   The user data service.
+   */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, AccountInterface $current_user, UserDataStorage $user_data) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->currentUser = $current_user;
+    $this->userData = $user_data;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('current_user'),
+      $container->get('user.data')
+    );
+  }
 
   /**
    * {@inheritDoc}
@@ -129,14 +175,14 @@ class CheppersNodeListBlock extends BlockBase {
    */
   public function getNodeNumberValue() {
     // Get current user object.
-    $user = \Drupal::currentUser();
+    $user = $this->currentUser;
     // Get block configuration.
     $config = $this->configuration;
 
     // Check if user is authenticated and has relevant permission.
-    if ($user->id() && !$user->isAnonymous() && $user->hasPermission('view cheppers node list block')) {
+    if ($user && $user->isAuthenticated() && $user->hasPermission('view cheppers node list block')) {
       // Get block value set by user.
-      $node_number = \Drupal::service('user.data')->get(
+      $node_number = $this->userData->get(
         'cheppers_node_list_block',
         $user->id(),
         'node_number'

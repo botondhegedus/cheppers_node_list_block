@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\block\Entity\Block;
 
 /**
  * Implements hook_help().
@@ -96,7 +97,7 @@ function get_block_config_value() {
   $default_config = \Drupal::config('cheppers_node_list_block.settings');
   $default_value = $default_config->get('node_list.item_number');
   // Get block instance.
-  $block = \Drupal\block\Entity\Block::load('cheppersnodelistblock');
+  $block = Block::load('cheppersnodelistblock');
 
   if ($block) {
     // Get node number set in admin.

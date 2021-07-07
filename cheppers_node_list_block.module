@@ -20,14 +20,6 @@ function cheppers_node_list_block_help($route_name) {
 }
 
 /**
- * Implements hook_uninstall().
- */
-function hook_module_uninstall(){
-  // Remove all user set data.
-  \Drupal::service('user.data')->delete('cheppers_node_list_block');
-}
-
-/**
  * Implements hook_form_FORM_ID_alter().
  *
  * Add the Cheppers Node List Block form to an individual user's account page

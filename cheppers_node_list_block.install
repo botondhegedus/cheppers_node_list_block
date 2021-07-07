@@ -11,8 +11,8 @@ use Drupal\user\RoleInterface;
  * Implements hook_install().
  */
 function cheppers_node_list_block_install() {
-  user_role_change_permissions(RoleInterface::AUTHENTICATED_ID, array(
+  user_role_change_permissions(RoleInterface::AUTHENTICATED_ID, [
     'view cheppers node list block' => TRUE,
     'set number of nodes listed in block' => TRUE,
-  ));
+  ]);
 }

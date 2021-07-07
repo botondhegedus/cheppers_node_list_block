@@ -103,10 +103,22 @@ class CheppersNodeListBlock extends BlockBase implements ContainerFactoryPluginI
       ];
     }
 
-    // Prevent block caching.
-    $build['#cache']['max-age'] = 0;
+    // Add the 'user' cache context to the block.
+    $build['#cache'] = [
+      'contexts' => [
+        'user',
+      ],
+      'max-age' => 0,
+    ];
 
     return $build;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheMaxAge() {
+    return 0;
   }
 
   /**

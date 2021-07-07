@@ -43,7 +43,7 @@ $user->hasPermission('set number of nodes listed in block')) {
     $account = $form_state->getFormObject()->getEntity();
 
     // Get block value set by user.
-    if ($account->id()) {
+    if ($account && $account->isAuthenticated()) {
       $account_data = \Drupal::service('user.data')->get(
         'cheppers_node_list_block',
         $account->id(),
@@ -76,7 +76,7 @@ function cheppers_node_list_block_user_profile_form_submit($form, FormStateInter
   $account = $form_state->getFormObject()->getEntity();
 
   // Set submitted value to account.
-  if ($account->id() && $form_state->hasValue('node_number')) {
+  if ($account && $account->isAuthenticated() && $form_state->hasValue('node_number')) {
     \Drupal::service('user.data')->set(
       'cheppers_node_list_block',
       $account->id(),
